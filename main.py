@@ -1,11 +1,12 @@
 from config import TOKEN
 import telebot
-from telebot.types import Message, ReplyKeyboardMarkup as Rkm, InlineKeyboardMarkup as Ikm, InlineKeyboardButton as Ikb,\
+from telebot.types import Message, ReplyKeyboardMarkup as Rkm, InlineKeyboardMarkup as Ikm, InlineKeyboardButton as Ikb, \
     CallbackQuery
 import databases
 
 bot = telebot.TeleBot(TOKEN)
 users = {}
+
 
 @bot.message_handler(commands=['start'])
 def start(m: Message):
@@ -24,7 +25,7 @@ def help_bot(m: Message):
 def sign_up(m: Message):
     users[m.chat.id] = {}
     bot.send_message(m.chat.id, 'напиши юзернейм:')
-    bot.register_next_step_handler(m,reg1)
+    bot.register_next_step_handler(m, reg1)
 
 
 @bot.message_handler(commands=['inline'])
@@ -33,7 +34,7 @@ def inline(m: Message):
     kb.row(Ikb(text='Google', url='google.com'), Ikb(text='Яндекс', url='yandex.ru'))
     kb.row(Ikb(text='ВКонтакте', url='vk.com'), Ikb(text='Telegram', url='telegram.org'))
     kb.row(Ikb(text='действие 1', callback_data='d1'))
-    kb.row(Ikb(text='уведомление',callback_data='notice'))
+    kb.row(Ikb(text='уведомление', callback_data='notice'))
     bot.send_message(m.chat.id, "выбери сайт:", reply_markup=kb)
 
 
@@ -48,47 +49,47 @@ def menu_bot(m: Message):
 def reg1(m: Message):
     username = m.text
     users[m.chat.id]['username'] = username
-    bot.send_message(m.chat.id,f'твой выбранный юзернейм - {username}, как тебя зовут?')
-    bot.register_next_step_handler(m,reg2,username)
+    bot.send_message(m.chat.id, f'твой выбранный юзернейм - {username}, как тебя зовут?')
+    bot.register_next_step_handler(m, reg2, username)
 
 
-def reg2(m: Message,username):
+def reg2(m: Message, username):
     name = m.text
     users[m.chat.id]['name'] = name
-    bot.send_message(m.chat.id,f'твое имя - {name}, username - {username}, сколько тебе лет?')
-    bot.register_next_step_handler(m,reg3,name,username)
+    bot.send_message(m.chat.id, f'твое имя - {name}, username - {username}, сколько тебе лет?')
+    bot.register_next_step_handler(m, reg3, name, username)
 
 
-def reg3(m: Message,name,username):
+def reg3(m: Message, name, username):
     age = m.text
     users[m.chat.id]['age'] = age
-    bot.send_message(m.chat.id,f'{username}, {name}: твой возраст-{age}, из какого ты города?')
+    bot.send_message(m.chat.id, f'{username}, {name}: твой возраст-{age}, из какого ты города?')
     bot.register_next_step_handler(m, reg4)
 
 
 def reg4(m: Message):
     city = m.text
     users[m.chat.id]['city'] = city
-    bot.send_message(m.chat.id,f'твой город-{city}, из какой ты страны?')
+    bot.send_message(m.chat.id, f'твой город-{city}, из какой ты страны?')
     bot.register_next_step_handler(m, reg5)
 
 
 def reg5(m: Message):
     country = m.text
     users[m.chat.id]['country'] = country
-    bot.send_message(m.chat.id,f'проверь свои данные: {users[m.chat.id]}')
-    databases.write_row(users,m.chat.id)
+    bot.send_message(m.chat.id, f'проверь свои данные: {users[m.chat.id]}')
+    databases.write_row(users, m.chat.id)
 
 
 @bot.callback_query_handler(func=lambda call: True)
-def inline_handler(call: CallbackQuery ):
+def inline_handler(call: CallbackQuery):
     print(call.data)
     if call.data == 'd1':
-        bot.send_message(call.message.chat.id,'действие 1 работает')
-        bot.edit_message_reply_markup(call.message.chat.id,call.message.message_id)
+        bot.send_message(call.message.chat.id, 'действие 1 работает')
+        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id)
     elif call.data == 'notice':
-        bot.answer_callback_query(call.id,'это всплывающее уведомление',False)
-        bot.send_message(call.message.chat.id,'уведомление получено')
+        bot.answer_callback_query(call.id, 'это всплывающее уведомление', False)
+        bot.send_message(call.message.chat.id, 'уведомление получено')
 
 
 @bot.message_handler(
